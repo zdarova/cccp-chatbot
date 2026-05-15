@@ -3,7 +3,6 @@ name: Deploy MLflow
 on:
   push:
     branches: [main]
-    paths: ['mlflow/**']
   workflow_dispatch:
 
 permissions:

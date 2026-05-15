@@ -3,7 +3,6 @@ name: Deploy Chatbot App
 on:
   push:
     branches: [main]
-    paths: ['app/**', 'web/**', 'Dockerfile']
   workflow_dispatch:
 
 permissions:
