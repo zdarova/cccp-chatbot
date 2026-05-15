@@ -110,6 +110,22 @@ def health():
     return {"status": "ok", "service": "cccp-chatbot"}
 
 
+@app.get("/api/events/{call_id}")
+def get_call_events(call_id: str):
+    """Get event timeline for a call (event sourcing read side)."""
+    from event_bus import get_event_bus
+    bus = get_event_bus()
+    return {"call_id": call_id, "events": bus.get_call_events(call_id)}
+
+
+@app.get("/api/events/metrics/summary")
+def get_event_metrics():
+    """Get aggregate event metrics."""
+    from event_bus import get_event_bus
+    bus = get_event_bus()
+    return {"metrics": bus.get_metrics(), "total_events": len(bus._local_log)}
+
+
 @app.get("/api/architecture")
 def architecture():
     return {"diagram": """flowchart TB

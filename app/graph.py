@@ -1,4 +1,4 @@
-"""LangGraph multi-agent graph with Send fan-out."""
+"""LangGraph multi-agent graph with Send fan-out + Supervisor pattern."""
 
 from langgraph.graph import StateGraph, END, START
 from langgraph.types import Send
@@ -11,6 +11,7 @@ from agents.kpi_insights import kpi_insights
 from agents.guidance import guidance
 from agents.summary import summary
 from agents.quality_checker import quality_check
+from agents.supervisor import supervise
 
 SPECIALISTS = {
     "customer_analyst": customer_analyst,
@@ -55,13 +56,15 @@ def build_graph():
     g.add_node("fan_out", lambda state: {})
     g.add_node("specialist", specialist_node)
     g.add_node("merge", merge_node)
+    g.add_node("supervisor", supervise)
     g.add_node("quality_check", quality_check)
 
     g.add_edge(START, "router")
     g.add_edge("router", "fan_out")
     g.add_conditional_edges("fan_out", fan_out_node)
     g.add_edge("specialist", "merge")
-    g.add_edge("merge", "quality_check")
+    g.add_edge("merge", "supervisor")
+    g.add_edge("supervisor", "quality_check")
     g.add_edge("quality_check", END)
 
     return g.compile()
