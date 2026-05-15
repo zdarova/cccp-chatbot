@@ -14,7 +14,7 @@ env:
   ACR_NAME: crcccppibz5vm5tus3o
   CONTAINER_APP: cccp-chatbot
   RESOURCE_GROUP: rg-cccp-poc
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE22: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-deploy:
