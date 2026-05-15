@@ -265,3 +265,18 @@ async function loadRecordings() {
         container.innerHTML = '<span class="sp-loading">Error loading</span>';
     }
 }
+
+
+// --- MLflow Dashboard ---
+function showMLflow() {
+    const MLFLOW_URL = 'https://cccp-mlflow.agreeablecliff-8b7135c2.northeurope.azurecontainerapps.io/';
+    const modal = document.createElement('div');
+    modal.className = 'arch-modal';
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = `
+        <div class="arch-content" style="width:95vw;height:85vh;padding:0;overflow:hidden">
+            <button class="arch-close" onclick="this.parentElement.parentElement.remove()" style="z-index:10;background:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center">✕</button>
+            <iframe src="${MLFLOW_URL}" style="width:100%;height:100%;border:none;border-radius:12px"></iframe>
+        </div>`;
+    document.body.appendChild(modal);
+}

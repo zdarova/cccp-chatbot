@@ -63,10 +63,10 @@
                 </div>
                 <div class="sidebar-section">
                     <h3>Quick Actions</h3>
-                    <button class="action-btn" onclick="askQuestion('Come sta andando il NPS nei call centre?')">📊 NPS Overview</button>
-                    <button class="action-btn" onclick="askQuestion('Quali nuovi temi emergono dalle chiamate?')">🔍 New Themes</button>
-                    <button class="action-btn" onclick="askQuestion('Suggerisci azioni per clienti a rischio churn')">⚠️ Churn Risk</button>
-                    <button class="action-btn" onclick="askQuestion('Cosa dice la guida su clienti insoddisfatti?')">📋 Guidance</button>
+                    <button class="action-btn" onclick="askQuestion('How is the NPS trending across call centres?')">📊 NPS Overview</button>
+                    <button class="action-btn" onclick="askQuestion('What new themes are emerging from recent calls?')">🔍 New Themes</button>
+                    <button class="action-btn" onclick="askQuestion('Suggest actions for customers at churn risk')">⚠️ Churn Risk</button>
+                    <button class="action-btn" onclick="askQuestion('What does the guidance say about dissatisfied customers?')">📋 Guidance</button>
                 </div>
                 <div class="sidebar-section sharepoint-section" id="sharepointSection" style="display:none">
                     <h3>📁 SharePoint</h3>
@@ -82,6 +82,7 @@
                 </div>
                 <div class="sidebar-section">
                     <button class="action-btn" onclick="showArchitecture()" style="background:#6264a7;color:white">📐 Architecture Diagram</button>
+                    <button class="action-btn" onclick="showMLflow()" style="background:#0e7c42;color:white">📈 MLflow Dashboard</button>
                 </div>
             </aside>
 
@@ -90,23 +91,23 @@
                     <div class="message assistant">
                         <div class="msg-avatar">AI</div>
                         <div class="bubble">
-                            <strong>Benvenuto!</strong> Sono l'assistente AI del Call Centre.<br><br>
-                            Posso aiutarti con:
+                            <strong>Welcome!</strong> I'm the Call Centre AI Assistant.<br><br>
+                            I can help you with:
                             <ul>
-                                <li>📊 <strong>KPI e metriche</strong> — NPS, CSAT, FCR, tempi di gestione</li>
-                                <li>👤 <strong>Analisi clienti</strong> — sentiment, storico interazioni</li>
-                                <li>🔍 <strong>Temi emergenti</strong> — pattern nelle chiamate</li>
-                                <li>💡 <strong>Raccomandazioni</strong> — prodotti, azioni commerciali</li>
-                                <li>📋 <strong>Guida operativa</strong> — best practice, procedure</li>
-                                <li>📝 <strong>Riassunti</strong> — sintesi interazioni cliente</li>
+                                <li>📊 <strong>KPIs & Metrics</strong> — NPS, CSAT, FCR, handle times</li>
+                                <li>👤 <strong>Customer Analysis</strong> — sentiment trends, interaction history</li>
+                                <li>🔍 <strong>Emerging Themes</strong> — patterns in recent calls</li>
+                                <li>💡 <strong>Recommendations</strong> — products, commercial actions</li>
+                                <li>📋 <strong>Guidance</strong> — best practices, procedures</li>
+                                <li>📝 <strong>Summaries</strong> — customer interaction overviews</li>
                             </ul>
                         </div>
                     </div>
                 </div>
                 <div class="input-area">
                     <div class="input-wrapper">
-                        <input type="text" id="input" placeholder="Chiedi qualcosa sul call centre..." onkeypress="if(event.key==='Enter')send()">
-                        <button onclick="send()" id="sendBtn">Invia</button>
+                        <input type="text" id="input" placeholder="Ask something about the call centre..." onkeypress="if(event.key==='Enter')send()">
+                        <button onclick="send()" id="sendBtn">Send</button>
                     </div>
                 </div>
             </div>
