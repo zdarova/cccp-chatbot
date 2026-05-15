@@ -253,22 +253,81 @@ def get_event_metrics():
 
 @app.get("/api/documents")
 def list_documents():
-    """List uploaded guidance documents."""
+    """List guidance documents from Cosmos DB + Blob Storage + local."""
+    from doc_tracker import list_tracked_documents
+    files = []
+
+    # From Cosmos DB (tracked status)
+    tracked = list_tracked_documents(file_type="pdf")
+    for t in tracked:
+        files.append({
+            "name": t["filename"],
+            "size": t["size"],
+            "url": f"/api/documents/download/{t['filename']}",
+            "indexed": t["status"] == "indexed",
+            "status": t["status"],
+            "source": "uploaded",
+        })
+
+    # Local bundled docs (shipped with container) - only add if not already tracked
+    tracked_names = {t["filename"] for t in tracked}
     docs_dir = os.path.join(os.path.dirname(__file__), 'web', 'docs')
     if not os.path.exists(docs_dir):
         docs_dir = os.path.join(os.path.dirname(__file__), '..', 'web', 'docs')
-    files = []
     if os.path.exists(docs_dir):
         for f in os.listdir(docs_dir):
-            if f.endswith('.pdf'):
+            if f.endswith('.pdf') and f not in tracked_names:
                 path = os.path.join(docs_dir, f)
                 files.append({
                     "name": f,
                     "size": os.path.getsize(path),
                     "url": f"/docs/{f}",
                     "indexed": True,
+                    "status": "indexed",
+                    "source": "bundled",
                 })
+
     return {"documents": files}
+
+
+@app.get("/api/recordings")
+def list_recordings_api():
+    """List audio recordings from Cosmos DB + Blob Storage."""
+    from doc_tracker import list_tracked_documents
+    recordings = []
+
+    # From Cosmos DB (tracked status)
+    tracked = list_tracked_documents(file_type="audio")
+    for t in tracked:
+        recordings.append({
+            "filename": t["filename"],
+            "status": t["status"],
+            "size": t["size"],
+            "processed": t["status"] == "processed",
+            "metadata": t.get("metadata", {}),
+        })
+
+    # From Blob Storage (recordings container) - add untracked ones
+    tracked_names = {t["filename"] for t in tracked}
+    try:
+        from azure.storage.blob import BlobServiceClient
+        conn_str = os.environ.get("AZURE_STORAGE_CONNECTION", "")
+        if conn_str:
+            blob_service = BlobServiceClient.from_connection_string(conn_str)
+            container = blob_service.get_container_client("recordings")
+            for blob in container.list_blobs():
+                if blob.name not in tracked_names:
+                    recordings.append({
+                        "filename": blob.name,
+                        "status": "pending",
+                        "size": blob.size,
+                        "processed": False,
+                        "metadata": {},
+                    })
+    except Exception as e:
+        logging.warning(f"Blob recordings list failed: {e}")
+
+    return {"recordings": recordings}
 
 
 from fastapi import UploadFile, File
@@ -276,19 +335,35 @@ from fastapi import UploadFile, File
 
 @app.post("/api/documents/upload")
 async def upload_document(file: UploadFile = File(...)):
-    """Upload a PDF guidance document, save and index into pgvector."""
+    """Upload a PDF guidance document to Blob Storage and index into pgvector."""
     if not file.filename.endswith('.pdf'):
         return {"error": "Only PDF files are supported"}
 
-    # Save file
+    from doc_tracker import track_document, update_status
+
+    safe_name = file.filename.replace(' ', '-').lower()
+    content = await file.read()
+
+    # Track in Cosmos DB
+    track_document(safe_name, file_type="pdf", status="uploaded", size=len(content))
+
+    # Save to Blob Storage (persistent)
+    try:
+        from azure.storage.blob import BlobServiceClient
+        conn_str = os.environ.get("AZURE_STORAGE_CONNECTION", "")
+        if conn_str:
+            blob_service = BlobServiceClient.from_connection_string(conn_str)
+            container = blob_service.get_container_client("documents")
+            container.upload_blob(safe_name, content, overwrite=True)
+    except Exception as e:
+        logging.warning(f"Blob upload failed: {e}")
+
+    # Save locally for indexing
     docs_dir = os.path.join(os.path.dirname(__file__), 'web', 'docs')
     if not os.path.exists(docs_dir):
         docs_dir = os.path.join(os.path.dirname(__file__), '..', 'web', 'docs')
     os.makedirs(docs_dir, exist_ok=True)
-
-    safe_name = file.filename.replace(' ', '-').lower()
     filepath = os.path.join(docs_dir, safe_name)
-    content = await file.read()
     with open(filepath, 'wb') as f:
         f.write(content)
 
@@ -296,6 +371,7 @@ async def upload_document(file: UploadFile = File(...)):
     import threading
     def _index():
         try:
+            update_status(safe_name, "indexing")
             from langchain_community.document_loaders import PyPDFLoader
             from langchain_text_splitters import RecursiveCharacterTextSplitter
             from tools.pgvector_tool import _get_guidance_store
@@ -309,13 +385,36 @@ async def upload_document(file: UploadFile = File(...)):
                 chunk.metadata['document_type'] = 'vehicle_guidance'
             store = _get_guidance_store()
             store.add_documents(chunks[:150])
+            update_status(safe_name, "indexed", {"chunks": min(len(chunks), 150), "pages": len(pages)})
             logging.info(f"Indexed {min(len(chunks),150)} chunks from {safe_name}")
         except Exception as e:
+            update_status(safe_name, "error", {"error": str(e)})
             logging.error(f"Indexing failed for {safe_name}: {e}")
 
     threading.Thread(target=_index, daemon=True).start()
 
     return {"status": "uploaded", "filename": safe_name, "size": len(content), "indexing": True}
+
+
+@app.get("/api/documents/download/{filename}")
+def download_document(filename: str):
+    """Download a document from Blob Storage."""
+    try:
+        from azure.storage.blob import BlobServiceClient
+        from fastapi.responses import Response
+        conn_str = os.environ.get("AZURE_STORAGE_CONNECTION", "")
+        if conn_str:
+            blob_service = BlobServiceClient.from_connection_string(conn_str)
+            container = blob_service.get_container_client("documents")
+            blob_data = container.download_blob(filename).readall()
+            return Response(
+                content=blob_data,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
+            )
+    except Exception as e:
+        logging.warning(f"Download failed: {e}")
+    return {"error": "File not found"}
 
 
 @app.get("/api/architecture")
@@ -413,64 +512,6 @@ def architecture():
     RT --> MLflow
     MLflow --> PG
 """}
-
-
-@app.get("/api/recordings")
-def list_recordings():
-    """List sample recordings and their processing status."""
-    try:
-        import psycopg
-        pg = os.environ.get("PG_CONNECTION_STRING", "")
-        if not pg:
-            return {"recordings": _sample_recordings()}
-        parts = dict(p.split("=", 1) for p in pg.split() if "=" in p)
-        conn = psycopg.connect(
-            host=parts["host"], port=int(parts["port"]),
-            dbname=parts["dbname"], user=parts["user"],
-            password=parts["password"], sslmode=parts.get("sslmode", "require"),
-        )
-        conn.autocommit = True
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT call_id, customer_id, agent_id, call_date, duration_seconds,
-                   call_centre, summary, tags, sentiment, estimated_nps,
-                   agent_quality, resolution_status, commercial_opportunity
-            FROM call_metadata ORDER BY call_date DESC
-        """)
-        rows = cur.fetchall()
-        cols = [d.name for d in cur.description]
-        recordings = []
-        for row in rows:
-            r = dict(zip(cols, row))
-            r["call_date"] = str(r["call_date"])
-            r["processed"] = True
-            recordings.append(r)
-        conn.close()
-        # Add unprocessed sample files
-        recordings.extend(_unprocessed_samples())
-        return {"recordings": recordings}
-    except Exception as e:
-        logging.warning(f"Recordings query failed: {e}")
-        return {"recordings": _sample_recordings()}
-
-
-def _unprocessed_samples():
-    return [
-        {"call_id": "CALL-PENDING-001", "customer_id": "C-1006", "agent_id": "AGT-20",
-         "call_date": "2026-05-15 15:30:00", "duration_seconds": 320, "call_centre": "Milano",
-         "summary": None, "tags": None, "sentiment": None, "estimated_nps": None,
-         "agent_quality": None, "resolution_status": None, "commercial_opportunity": None,
-         "processed": False, "filename": "call-pending-001.wav"},
-        {"call_id": "CALL-PENDING-002", "customer_id": "C-1007", "agent_id": "AGT-05",
-         "call_date": "2026-05-15 16:00:00", "duration_seconds": 450, "call_centre": "Roma",
-         "summary": None, "tags": None, "sentiment": None, "estimated_nps": None,
-         "agent_quality": None, "resolution_status": None, "commercial_opportunity": None,
-         "processed": False, "filename": "call-pending-002.wav"},
-    ]
-
-
-def _sample_recordings():
-    return _unprocessed_samples()
 
 
 # Serve web UI (must be last - catches all unmatched routes)
