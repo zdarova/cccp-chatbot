@@ -9,9 +9,9 @@ localStorage.setItem('cccp_session', SID);
 
 // --- Microsoft Login (MSAL) ---
 const MSAL_CONFIG = {
-    clientId: '', // Set your Azure AD App Client ID here
+    clientId: 'ecbb8f92-f38d-480c-a400-40f3804e54ba',
     authority: 'https://login.microsoftonline.com/common',
-    redirectUri: window.location.origin,
+    redirectUri: window.location.origin + '/',
     scopes: ['User.Read', 'Files.Read.All', 'Sites.Read.All'],
 };
 
