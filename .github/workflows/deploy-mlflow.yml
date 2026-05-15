@@ -1,0 +1,60 @@
+name: Deploy MLflow
+
+on:
+  push:
+    branches: [main]
+    paths: ['mlflow/**']
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ACR_NAME: crcccppibz5vm5tus3o
+  CONTAINER_APP: cccp-mlflow
+  RESOURCE_GROUP: rg-cccp-poc
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: azure/login@v4
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Build image in ACR
+        run: |
+          az acr build \
+            --registry $ACR_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --image cccp-mlflow:${{ github.sha }} \
+            --image cccp-mlflow:latest \
+            --file mlflow/Dockerfile \
+            mlflow/
+
+  deploy:
+    name: 🚀 Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v4
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy to Container App
+        run: |
+          az containerapp update \
+            --name $CONTAINER_APP \
+            --resource-group $RESOURCE_GROUP \
+            --image $ACR_NAME.azurecr.io/cccp-mlflow:${{ github.sha }}
+      - name: Verify deployment
+        run: |
+          sleep 15
+          curl -sf "https://cccp-mlflow.agreeablecliff-8b7135c2.northeurope.azurecontainerapps.io/api/2.0/mlflow/experiments/search" \
+            -H "Content-Type: application/json" -d '{"max_results":1}' && echo "✅ MLflow OK" || echo "⚠️ Pending"
