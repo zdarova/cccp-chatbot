@@ -1,0 +1,6 @@
+langchain==0.3.25
+langchain-openai==0.3.18
+langchain-postgres==0.0.13
+langchain-community==0.3.25
+psycopg[binary]==3.2.0
+pypdf==4.3.0
