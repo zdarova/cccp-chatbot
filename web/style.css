@@ -119,18 +119,18 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .rec-meta { font-size: .6rem; color: var(--mazda-muted); }
 
 /* Architecture Modal */
-.arch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.arch-content { background: white; border-radius: 12px; width: 96vw; height: 94vh; position: relative; display: flex; flex-direction: column; }
-.arch-header { display: flex; align-items: center; justify-content: space-between; padding: .6rem 1rem; border-bottom: 1px solid var(--mazda-border); }
-.arch-header h2 { font-size: 1rem; color: var(--mazda-accent); margin: 0; }
-.arch-controls { display: flex; gap: .4rem; }
-.arch-controls button { width: 32px; height: 32px; border: 1px solid var(--mazda-border); border-radius: 6px; background: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+.arch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: stretch; justify-content: stretch; z-index: 1000; padding: .5rem; }
+.arch-content { background: white; border-radius: 8px; width: 100%; height: 100%; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+.arch-header { display: flex; align-items: center; justify-content: space-between; padding: .4rem .8rem; border-bottom: 1px solid var(--mazda-border); flex-shrink: 0; }
+.arch-header h2 { font-size: .9rem; color: var(--mazda-accent); margin: 0; }
+.arch-controls { display: flex; gap: .3rem; }
+.arch-controls button { width: 28px; height: 28px; border: 1px solid var(--mazda-border); border-radius: 4px; background: white; cursor: pointer; font-size: .9rem; display: flex; align-items: center; justify-content: center; }
 .arch-controls button:hover { background: var(--mazda-hover); }
-.arch-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--mazda-muted); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+.arch-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--mazda-muted); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
 .arch-close:hover { background: #fee2e2; color: #dc2626; }
-.arch-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-.arch-body .mermaid { transform-origin: center center; transition: transform .2s ease; }
-.arch-body .mermaid svg { max-width: none !important; height: auto !important; }
+.arch-body { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.arch-body .mermaid { transform-origin: center center; transition: transform .2s ease; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.arch-body .mermaid svg { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; }
 
 /* Live Call */
 .live-call-btn.active { background: #22c55e !important; animation: pulse-mic 1.5s infinite; }

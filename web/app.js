@@ -232,9 +232,9 @@ async function showArchitecture() {
                 <div class="arch-header">
                     <h2>CCCP Platform Architecture</h2>
                     <div class="arch-controls">
-                        <button onclick="archZoom(-0.2)" title="Zoom Out">➖</button>
-                        <button onclick="archZoom(0)" title="Reset">🔄</button>
-                        <button onclick="archZoom(0.2)" title="Zoom In">➕</button>
+                        <button onclick="archZoom(-0.15)" title="Zoom Out">➖</button>
+                        <button onclick="archZoom(0)" title="Fit">⬜</button>
+                        <button onclick="archZoom(0.15)" title="Zoom In">➕</button>
                         <button class="arch-close" onclick="this.closest('.arch-modal').remove()" title="Close">✕</button>
                     </div>
                 </div>
@@ -244,16 +244,26 @@ async function showArchitecture() {
             </div>`;
         document.body.appendChild(modal);
         await mermaid.run({ nodes: modal.querySelectorAll('.mermaid') });
+
+        // Force SVG to fill container
+        const svg = document.querySelector('#archDiagram svg');
+        if (svg) {
+            svg.removeAttribute('height');
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        }
     } catch (e) {
         alert('Failed to load architecture: ' + e.message);
     }
 }
 
 function archZoom(delta) {
-    if (delta === 0) { _archZoom = 1; }
-    else { _archZoom = Math.max(0.3, Math.min(3, _archZoom + delta)); }
     const el = document.getElementById('archDiagram');
-    if (el) el.style.transform = `scale(${_archZoom})`;
+    if (!el) return;
+    if (delta === 0) { _archZoom = 1; }
+    else { _archZoom = Math.max(0.5, Math.min(3, _archZoom + delta)); }
+    el.style.transform = `scale(${_archZoom})`;
 }
 
 // --- Recordings ---
