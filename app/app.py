@@ -118,6 +118,65 @@ def get_call_events(call_id: str):
     return {"call_id": call_id, "events": bus.get_call_events(call_id)}
 
 
+class SentimentRequest(BaseModel):
+    text: str
+    call_id: str = "live"
+
+
+@app.post("/api/sentiment")
+async def analyse_sentiment(req: SentimentRequest):
+    """Real-time sentiment analysis for a single utterance."""
+    from event_bus import get_event_bus, CallEvent
+    import asyncio
+
+    bus = get_event_bus()
+
+    # Publish utterance event (triggers reactive agents)
+    await bus.publish(CallEvent(
+        event_type="utterance.customer",
+        call_id=req.call_id,
+        data={"text": req.text},
+        source_agent="live_mic",
+    ))
+
+    # Also do LLM-based sentiment for more nuance
+    try:
+        from langchain_openai import AzureChatOpenAI
+        from langchain_core.prompts import ChatPromptTemplate
+
+        llm = AzureChatOpenAI(
+            azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+            api_key=os.environ["AZURE_OPENAI_KEY"],
+            azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
+            api_version="2024-06-01",
+            temperature=0, max_tokens=100,
+        )
+        prompt = ChatPromptTemplate.from_template(
+            "Analyse sentiment of this call centre utterance.\n"
+            "Utterance: {text}\n"
+            'Reply ONLY JSON: {{"sentiment": "positive|negative|neutral", "score": <-1.0 to 1.0>, "emotion": "<primary emotion>"}}'
+        )
+        result = (prompt | llm).invoke({"text": req.text})
+        import json as _json
+        import re
+        match = re.search(r'\{[^}]+\}', result.content)
+        if match:
+            parsed = _json.loads(match.group())
+            return parsed
+    except Exception as e:
+        logging.warning(f"LLM sentiment failed: {e}")
+
+    # Fallback: simple keyword-based
+    text_lower = req.text.lower()
+    neg_words = ["problem", "issue", "terrible", "cancel", "angry", "frustrated", "unacceptable", "worst"]
+    pos_words = ["thank", "great", "perfect", "happy", "excellent", "satisfied", "wonderful"]
+    neg = sum(1 for w in neg_words if w in text_lower)
+    pos = sum(1 for w in pos_words if w in text_lower)
+    score = (pos - neg) / max(pos + neg, 1)
+    sentiment = "negative" if score < -0.2 else "positive" if score > 0.2 else "neutral"
+    return {"sentiment": sentiment, "score": round(score, 2), "emotion": "unknown"}
+
+
 @app.get("/api/events/metrics/summary")
 def get_event_metrics():
     """Get aggregate event metrics."""

@@ -299,3 +299,122 @@ function showMLflow() {
         </div>`;
     document.body.appendChild(modal);
 }
+
+
+// --- Live Call Simulation (Real-time STT + Sentiment) ---
+let _liveCallActive = false;
+let _recognition = null;
+let _sentimentHistory = [];
+
+function toggleLiveCall() {
+    if (_liveCallActive) {
+        stopLiveCall();
+    } else {
+        startLiveCall();
+    }
+}
+
+function startLiveCall() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+        alert('Speech Recognition not supported. Use Chrome or Edge.');
+        return;
+    }
+
+    _liveCallActive = true;
+    _sentimentHistory = [];
+    const btn = document.getElementById('liveCallBtn');
+    btn.textContent = '⏹️ Stop Call';
+    btn.classList.add('active');
+    document.getElementById('liveCallPanel').style.display = 'block';
+    document.getElementById('liveTranscript').innerHTML = '';
+    document.getElementById('currentSentiment').textContent = '—';
+    document.getElementById('overallSentiment').textContent = '—';
+
+    _recognition = new SR();
+    _recognition.lang = 'en-US';
+    _recognition.continuous = true;
+    _recognition.interimResults = false;
+
+    _recognition.onresult = async (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) {
+                const text = e.results[i][0].transcript.trim();
+                if (text) {
+                    await processUtterance(text);
+                }
+            }
+        }
+    };
+
+    _recognition.onerror = (e) => {
+        if (e.error !== 'no-speech') {
+            console.warn('STT error:', e.error);
+        }
+    };
+
+    _recognition.onend = () => {
+        if (_liveCallActive) {
+            _recognition.start(); // Keep listening
+        }
+    };
+
+    _recognition.start();
+}
+
+function stopLiveCall() {
+    _liveCallActive = false;
+    if (_recognition) {
+        _recognition.stop();
+        _recognition = null;
+    }
+    const btn = document.getElementById('liveCallBtn');
+    btn.textContent = '🎤 Start Live Call';
+    btn.classList.remove('active');
+}
+
+async function processUtterance(text) {
+    // Send to backend for sentiment analysis
+    try {
+        const res = await fetch(BASE + '/api/sentiment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, call_id: 'live-' + SID }),
+        });
+        const data = await res.json();
+
+        // Update current sentiment
+        const sentiment = data.sentiment || 'neutral';
+        const score = data.score || 0;
+        _sentimentHistory.push(score);
+
+        const currentEl = document.getElementById('currentSentiment');
+        currentEl.textContent = `${sentimentEmoji(sentiment)} ${sentiment} (${score.toFixed(2)})`;
+        currentEl.className = `sentiment-value ${sentiment}`;
+
+        // Update overall sentiment (rolling average)
+        const avg = _sentimentHistory.reduce((a, b) => a + b, 0) / _sentimentHistory.length;
+        const overallSent = avg < -0.2 ? 'negative' : avg > 0.2 ? 'positive' : 'neutral';
+        const overallEl = document.getElementById('overallSentiment');
+        overallEl.textContent = `${sentimentEmoji(overallSent)} ${overallSent} (${avg.toFixed(2)})`;
+        overallEl.className = `sentiment-value ${overallSent}`;
+
+        // Add to transcript
+        const transcript = document.getElementById('liveTranscript');
+        const badgeClass = sentiment === 'positive' ? 'pos' : sentiment === 'negative' ? 'neg' : 'neu';
+        transcript.innerHTML += `<div class="utterance">"${text}" <span class="sent-badge ${badgeClass}">${sentiment} ${score.toFixed(1)}</span></div>`;
+        transcript.scrollTop = transcript.scrollHeight;
+
+    } catch (e) {
+        console.warn('Sentiment analysis failed:', e);
+        // Still show transcript
+        const transcript = document.getElementById('liveTranscript');
+        transcript.innerHTML += `<div class="utterance">"${text}" <span class="sent-badge neu">?</span></div>`;
+    }
+}
+
+function sentimentEmoji(s) {
+    if (s === 'positive') return '😊';
+    if (s === 'negative') return '😠';
+    return '😐';
+}

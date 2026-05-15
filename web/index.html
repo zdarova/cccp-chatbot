@@ -75,6 +75,23 @@
                     </div>
                 </div>
                 <div class="sidebar-section">
+                    <h3>🎙️ Live Call Simulation</h3>
+                    <button class="action-btn live-call-btn" id="liveCallBtn" onclick="toggleLiveCall()" style="background:#dc2626;color:white">🎤 Start Live Call</button>
+                    <div id="liveCallPanel" style="display:none">
+                        <div class="live-sentiment" id="liveSentiment">
+                            <div class="sentiment-gauge">
+                                <span class="sentiment-label">Current:</span>
+                                <span class="sentiment-value" id="currentSentiment">—</span>
+                            </div>
+                            <div class="sentiment-gauge">
+                                <span class="sentiment-label">Overall:</span>
+                                <span class="sentiment-value" id="overallSentiment">—</span>
+                            </div>
+                        </div>
+                        <div class="live-transcript" id="liveTranscript"></div>
+                    </div>
+                </div>
+                <div class="sidebar-section">
                     <h3>🎙️ Recordings</h3>
                     <div id="recordingsList" class="recordings-list">
                         <span class="sp-loading">Loading...</span>
