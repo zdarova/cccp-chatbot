@@ -94,3 +94,22 @@ header { display: flex; align-items: center; justify-content: space-between; pad
     .chat-container { padding: 1rem; }
     .input-area { padding: .6rem 1rem; }
 }
+
+
+/* Recordings */
+.recordings-list { display: flex; flex-direction: column; gap: .3rem; }
+.rec-item { display: flex; align-items: center; gap: .4rem; padding: .3rem .5rem; border-radius: 4px; font-size: .7rem; border: 1px solid var(--teams-border); }
+.rec-item.processed { background: #f0fdf4; border-color: #86efac; }
+.rec-item.pending { background: #fef9c3; border-color: #fde047; }
+.rec-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.rec-status.done { background: #22c55e; }
+.rec-status.wait { background: #f59e0b; }
+.rec-info { flex: 1; overflow: hidden; }
+.rec-id { font-weight: 500; }
+.rec-meta { font-size: .6rem; color: var(--teams-muted); }
+
+/* Architecture Modal */
+.arch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.arch-content { background: white; border-radius: 12px; padding: 1.5rem; max-width: 95vw; max-height: 90vh; overflow: auto; position: relative; }
+.arch-close { position: absolute; top: .5rem; right: .8rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--teams-muted); }
+.arch-content .mermaid { min-width: 800px; }

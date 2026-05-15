@@ -89,6 +89,161 @@ def health():
     return {"status": "ok", "service": "cccp-chatbot"}
 
 
+@app.get("/api/architecture")
+def architecture():
+    return {"diagram": """flowchart TB
+    subgraph External[External Systems]
+        Genesys[Genesys Call Centre]
+        SP[SharePoint - Guidance PDFs]
+        Teams[Microsoft Teams]
+    end
+
+    subgraph RealTime[Real-Time Processing]
+        STT[Azure AI Speech - Real-time STT]
+        EH[Event Hubs - call-transcripts]
+        RT[Real-Time Agent - Container App]
+        WS[WebSocket Copilot]
+    end
+
+    subgraph PostCall[Post-Call Analytics]
+        Blob[Blob Storage - Recordings]
+        ADF[Azure Data Factory]
+        Whisper[Azure OpenAI Whisper]
+        Enrich[GPT-5.4 Enrichment]
+        Cluster[Theme Discovery - HDBSCAN]
+    end
+
+    subgraph Chatbot[Multi-Agent Chatbot]
+        Bot[Azure Bot Service]
+        API[FastAPI - Container App]
+        Router[Router Agent]
+        CA[Customer Analyst]
+        TD[Theme Discovery]
+        REC[Recommendation]
+        KPI[KPI Insights]
+        GD[Guidance Agent]
+        SUM[Summary Agent]
+        QC[Quality Checker]
+    end
+
+    subgraph Data[Data Layer]
+        PG[(PostgreSQL pgvector)]
+        Cosmos[(Cosmos DB)]
+    end
+
+    subgraph AI[AI Services]
+        GPT[Azure OpenAI GPT-5.4]
+        EMB[text-embedding-3-small]
+    end
+
+    subgraph MLOps[LLMOps / Monitoring]
+        MLflow[MLflow Tracking]
+        Logs[Log Analytics]
+    end
+
+    Genesys -->|audio stream| STT
+    STT --> EH
+    EH --> RT
+    RT -->|suggestions| WS
+    RT --> GPT
+    RT --> PG
+
+    Genesys -->|recordings| Blob
+    Blob --> ADF
+    ADF --> Whisper
+    Whisper --> Enrich
+    Enrich --> Cluster
+    Enrich --> PG
+    Enrich --> GPT
+
+    Teams --> Bot
+    Bot --> API
+    API --> Router
+    Router --> CA
+    Router --> TD
+    Router --> REC
+    Router --> KPI
+    Router --> GD
+    Router --> SUM
+    CA --> QC
+    TD --> QC
+    REC --> QC
+    KPI --> QC
+    GD --> QC
+    SUM --> QC
+
+    CA --> PG
+    TD --> PG
+    GD --> PG
+    SUM --> PG
+    KPI --> PG
+    REC --> GPT
+
+    SP -->|indexed| PG
+    API --> MLflow
+    RT --> MLflow
+    MLflow --> PG
+"""}
+
+
+@app.get("/api/recordings")
+def list_recordings():
+    """List sample recordings and their processing status."""
+    try:
+        import psycopg
+        pg = os.environ.get("PG_CONNECTION_STRING", "")
+        if not pg:
+            return {"recordings": _sample_recordings()}
+        parts = dict(p.split("=", 1) for p in pg.split() if "=" in p)
+        conn = psycopg.connect(
+            host=parts["host"], port=int(parts["port"]),
+            dbname=parts["dbname"], user=parts["user"],
+            password=parts["password"], sslmode=parts.get("sslmode", "require"),
+        )
+        conn.autocommit = True
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT call_id, customer_id, agent_id, call_date, duration_seconds,
+                   call_centre, summary, tags, sentiment, estimated_nps,
+                   agent_quality, resolution_status, commercial_opportunity
+            FROM call_metadata ORDER BY call_date DESC
+        """)
+        rows = cur.fetchall()
+        cols = [d.name for d in cur.description]
+        recordings = []
+        for row in rows:
+            r = dict(zip(cols, row))
+            r["call_date"] = str(r["call_date"])
+            r["processed"] = True
+            recordings.append(r)
+        conn.close()
+        # Add unprocessed sample files
+        recordings.extend(_unprocessed_samples())
+        return {"recordings": recordings}
+    except Exception as e:
+        logging.warning(f"Recordings query failed: {e}")
+        return {"recordings": _sample_recordings()}
+
+
+def _unprocessed_samples():
+    return [
+        {"call_id": "CALL-PENDING-001", "customer_id": "C-1006", "agent_id": "AGT-20",
+         "call_date": "2026-05-15 15:30:00", "duration_seconds": 320, "call_centre": "Milano",
+         "summary": None, "tags": None, "sentiment": None, "estimated_nps": None,
+         "agent_quality": None, "resolution_status": None, "commercial_opportunity": None,
+         "processed": False, "filename": "call-pending-001.wav"},
+        {"call_id": "CALL-PENDING-002", "customer_id": "C-1007", "agent_id": "AGT-05",
+         "call_date": "2026-05-15 16:00:00", "duration_seconds": 450, "call_centre": "Roma",
+         "summary": None, "tags": None, "sentiment": None, "estimated_nps": None,
+         "agent_quality": None, "resolution_status": None, "commercial_opportunity": None,
+         "processed": False, "filename": "call-pending-002.wav"},
+    ]
+
+
+def _sample_recordings():
+    return _unprocessed_samples()
+
+
 # Serve web UI (must be last - catches all unmatched routes)
 web_dir = os.path.join(os.path.dirname(__file__), 'web')
 if not os.path.exists(web_dir):

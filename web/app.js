@@ -209,4 +209,59 @@ async function send() {
 }
 
 // --- Init ---
+mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
 checkAuthRedirect();
+loadRecordings();
+
+
+// --- Architecture Diagram ---
+async function showArchitecture() {
+    try {
+        const res = await fetch(BASE + '/api/architecture');
+        const data = await res.json();
+
+        const modal = document.createElement('div');
+        modal.className = 'arch-modal';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        modal.innerHTML = `
+            <div class="arch-content">
+                <button class="arch-close" onclick="this.parentElement.parentElement.remove()">✕</button>
+                <h2 style="margin-bottom:1rem;color:var(--teams-accent)">CCCP Architecture</h2>
+                <div class="mermaid">${data.diagram}</div>
+            </div>`;
+        document.body.appendChild(modal);
+        await mermaid.run({ nodes: modal.querySelectorAll('.mermaid') });
+    } catch (e) {
+        alert('Failed to load architecture: ' + e.message);
+    }
+}
+
+// --- Recordings ---
+async function loadRecordings() {
+    const container = document.getElementById('recordingsList');
+    if (!container) return;
+    try {
+        const res = await fetch(BASE + '/api/recordings');
+        const data = await res.json();
+        if (!data.recordings || data.recordings.length === 0) {
+            container.innerHTML = '<span class="sp-loading">No recordings</span>';
+            return;
+        }
+        container.innerHTML = data.recordings.map(r => {
+            const status = r.processed ? 'processed' : 'pending';
+            const dot = r.processed ? 'done' : 'wait';
+            const icon = r.processed ? '✅' : '⏳';
+            const sentiment = r.sentiment != null ? ` | Sent: ${r.sentiment > 0 ? '😊' : r.sentiment < -0.3 ? '😠' : '😐'}` : '';
+            const nps = r.estimated_nps != null ? ` | NPS: ${r.estimated_nps}` : '';
+            return `<div class="rec-item ${status}">
+                <span class="rec-status ${dot}"></span>
+                <div class="rec-info">
+                    <div class="rec-id">${icon} ${r.call_id}</div>
+                    <div class="rec-meta">${r.call_centre || ''} | ${r.call_date?.split(' ')[0] || ''}${sentiment}${nps}</div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        container.innerHTML = '<span class="sp-loading">Error loading</span>';
+    }
+}
