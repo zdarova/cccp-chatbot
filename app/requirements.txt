@@ -9,3 +9,4 @@ snowflake-connector-python==4.5.0
 azure-cosmos==4.15.0
 requests
 pydantic==2.13.4
+mlflow==3.12.0

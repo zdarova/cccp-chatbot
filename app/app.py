@@ -3,6 +3,7 @@
 import os
 import json
 import uuid
+import time
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +11,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from graph import build_graph
+from tracking import log_query
 
 logging.basicConfig(level=logging.INFO)
 
@@ -40,6 +42,11 @@ def _sse(event: str, data: dict) -> str:
 def chat(req: ChatRequest):
     def stream():
         msg_id = str(uuid.uuid4())[:8]
+        start_time = time.perf_counter()
+        routes_used = []
+        quality_scores = {}
+        response_text = ""
+
         initial_state = {
             "question": req.query,
             "raw_question": req.query,
@@ -57,8 +64,9 @@ def chat(req: ChatRequest):
         try:
             for event in _get_graph().stream(initial_state):
                 for node_name, node_output in event.items():
-                    if node_name == "router":
+                    elif node_name == "router":
                         routes = node_output.get("routes", ["fallback"])
+                        routes_used = routes
                         yield _sse("routing", {
                             "agents": routes,
                             "reasoning": node_output.get("reasoning", ""),
@@ -71,11 +79,24 @@ def chat(req: ChatRequest):
                                 "text": ar["text"],
                             })
                     elif node_name == "merge":
-                        yield _sse("response", {"text": node_output.get("response", "")})
+                        response_text = node_output.get("response", "")
+                        yield _sse("response", {"text": response_text})
                     elif node_name == "quality_check":
-                        yield _sse("quality", {"quality": node_output.get("quality", {})})
+                        quality_scores = node_output.get("quality", {})
+                        yield _sse("quality", {"quality": quality_scores})
 
             yield _sse("done", {"session_id": req.session_id, "message_id": msg_id})
+
+            # Log to MLflow (async-safe, non-blocking)
+            latency_ms = (time.perf_counter() - start_time) * 1000
+            try:
+                import threading
+                threading.Thread(target=log_query, args=(
+                    req.query, routes_used, len(response_text),
+                    quality_scores, latency_ms, req.user_name
+                ), daemon=True).start()
+            except Exception:
+                pass
 
         except Exception as e:
             logging.error(f"Error: {e}")
