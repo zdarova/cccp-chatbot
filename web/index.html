@@ -29,11 +29,11 @@
         <header>
             <div class="header-left">
                 <div class="teams-icon">
-                    <svg width="24" height="24" viewBox="0 0 23 23"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></svg>
+                    <img src="/mazda-logo.png" alt="Mazda" style="height:24px" onerror="this.style.display='none'">
                 </div>
                 <div>
                     <h1>CCCP AI Assistant</h1>
-                    <span class="header-sub">Call Centre Cognitive Platform</span>
+                    <span class="header-sub">Call Centre Cognitive Platform — Mazda SKYACTIV</span>
                 </div>
             </div>
             <div class="header-right">
@@ -62,16 +62,34 @@
                     </div>
                 </div>
                 <div class="sidebar-section">
+                    <h3>📄 Guidance Documents</h3>
+                    <div class="doc-list">
+                        <a href="/docs/mazda-cx5-body-manual.pdf" target="_blank" class="doc-item">
+                            <span class="doc-icon">📕</span>
+                            <div class="doc-info">
+                                <div class="doc-name">Mazda CX-5 Body Manual</div>
+                                <div class="doc-meta">2012-2015 • ENG • 161 pages</div>
+                            </div>
+                            <span class="doc-download">⬇️</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="sidebar-section">
                     <h3>Quick Actions</h3>
                     <button class="action-btn" onclick="askQuestion('How is the NPS trending across call centres?')">📊 NPS Overview</button>
                     <button class="action-btn" onclick="askQuestion('What new themes are emerging from recent calls?')">🔍 New Themes</button>
                     <button class="action-btn" onclick="askQuestion('Suggest actions for customers at churn risk')">⚠️ Churn Risk</button>
                     <button class="action-btn" onclick="askQuestion('What does the guidance say about dissatisfied customers?')">📋 Guidance</button>
+                    <button class="action-btn" onclick="askQuestion('How do I remove the front bumper on a Mazda CX-5?')">🚗 Mazda CX-5 Guide</button>
                 </div>
-                <div class="sidebar-section sharepoint-section" id="sharepointSection" style="display:none">
-                    <h3>📁 SharePoint</h3>
-                    <div id="sharepointFiles" class="sp-files">
-                        <span class="sp-loading">Connecting...</span>
+                <div class="sidebar-section sharepoint-section">
+                    <h3>📁 Knowledge Base</h3>
+                    <div id="documentsList" class="doc-list">
+                        <span class="sp-loading">Loading...</span>
+                    </div>
+                    <div class="upload-area" onclick="document.getElementById('fileUpload').click()">
+                        <input type="file" id="fileUpload" accept=".pdf" onchange="uploadDocument(this)">
+                        <label>➕ Upload PDF Guide</label>
                     </div>
                 </div>
                 <div class="sidebar-section">

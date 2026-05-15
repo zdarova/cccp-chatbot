@@ -251,6 +251,73 @@ def get_event_metrics():
     return {"metrics": bus.get_metrics(), "total_events": len(bus._local_log)}
 
 
+@app.get("/api/documents")
+def list_documents():
+    """List uploaded guidance documents."""
+    docs_dir = os.path.join(os.path.dirname(__file__), 'web', 'docs')
+    if not os.path.exists(docs_dir):
+        docs_dir = os.path.join(os.path.dirname(__file__), '..', 'web', 'docs')
+    files = []
+    if os.path.exists(docs_dir):
+        for f in os.listdir(docs_dir):
+            if f.endswith('.pdf'):
+                path = os.path.join(docs_dir, f)
+                files.append({
+                    "name": f,
+                    "size": os.path.getsize(path),
+                    "url": f"/docs/{f}",
+                    "indexed": True,
+                })
+    return {"documents": files}
+
+
+from fastapi import UploadFile, File
+
+
+@app.post("/api/documents/upload")
+async def upload_document(file: UploadFile = File(...)):
+    """Upload a PDF guidance document, save and index into pgvector."""
+    if not file.filename.endswith('.pdf'):
+        return {"error": "Only PDF files are supported"}
+
+    # Save file
+    docs_dir = os.path.join(os.path.dirname(__file__), 'web', 'docs')
+    if not os.path.exists(docs_dir):
+        docs_dir = os.path.join(os.path.dirname(__file__), '..', 'web', 'docs')
+    os.makedirs(docs_dir, exist_ok=True)
+
+    safe_name = file.filename.replace(' ', '-').lower()
+    filepath = os.path.join(docs_dir, safe_name)
+    content = await file.read()
+    with open(filepath, 'wb') as f:
+        f.write(content)
+
+    # Index into pgvector (background)
+    import threading
+    def _index():
+        try:
+            from langchain_community.document_loaders import PyPDFLoader
+            from langchain_text_splitters import RecursiveCharacterTextSplitter
+            from tools.pgvector_tool import _get_guidance_store
+
+            loader = PyPDFLoader(filepath)
+            pages = loader.load()
+            splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+            chunks = splitter.split_documents(pages)
+            for chunk in chunks:
+                chunk.metadata['source'] = safe_name
+                chunk.metadata['document_type'] = 'vehicle_guidance'
+            store = _get_guidance_store()
+            store.add_documents(chunks[:150])
+            logging.info(f"Indexed {min(len(chunks),150)} chunks from {safe_name}")
+        except Exception as e:
+            logging.error(f"Indexing failed for {safe_name}: {e}")
+
+    threading.Thread(target=_index, daemon=True).start()
+
+    return {"status": "uploaded", "filename": safe_name, "size": len(content), "indexing": True}
+
+
 @app.get("/api/architecture")
 def architecture():
     return {"diagram": """flowchart TB

@@ -68,3 +68,19 @@ def search_guidance(query: str, k: int = 4) -> str:
     except Exception as e:
         logging.warning(f"Guidance search failed: {e}")
         return ""
+
+
+def search_guidance_with_metadata(query: str, k: int = 4) -> dict:
+    """Search guidance documents and return text + image URLs."""
+    try:
+        docs = _get_guidance_store().similarity_search(query, k=k)
+        text = "\n\n".join(d.page_content for d in docs)
+        images = []
+        for d in docs:
+            img = d.metadata.get("image_url")
+            if img and img not in images:
+                images.append(img)
+        return {"text": text, "images": images}
+    except Exception as e:
+        logging.warning(f"Guidance search with metadata failed: {e}")
+        return {"text": "", "images": []}

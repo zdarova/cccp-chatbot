@@ -35,13 +35,24 @@ PROMPT = ChatPromptTemplate.from_template(
 
 
 def guidance(state: AgentState) -> AgentState:
-    from tools.pgvector_tool import search_guidance
+    from tools.pgvector_tool import search_guidance_with_metadata
 
-    docs = search_guidance(state["question"], k=4)
-    context = f"Guidance documents:\n{docs}"
+    results = search_guidance_with_metadata(state["question"], k=4)
+    docs_text = results["text"]
+    images = results["images"]
+
+    context = f"Guidance documents:\n{docs_text}"
 
     result = (PROMPT | _get_llm()).invoke({
         "context": context[:4000],
         "question": state["question"][:1500],
     })
-    return {**state, "response": result.content}
+
+    response = result.content
+    # Append image references if available
+    if images:
+        response += "\n\n**📷 Related diagrams:**\n"
+        for img in images[:3]:
+            response += f"\n![Diagram]({img})\n"
+
+    return {**state, "response": response}

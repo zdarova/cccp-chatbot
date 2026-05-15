@@ -93,10 +93,10 @@ def test_customer_analyst():
 
 def test_guidance():
     with patch("agents.guidance._get_llm", return_value=_fake_llm("Follow step 3 of guidance")):
-        with patch("tools.pgvector_tool.search_guidance", return_value="guidance text"):
+        with patch("tools.pgvector_tool.search_guidance_with_metadata", return_value={"text": "guidance text", "images": []}):
             from agents.guidance import guidance
             result = guidance(_base_state(question="Cosa fare se cliente lamenta?"))
-            assert result["response"] == "Follow step 3 of guidance"
+            assert "Follow step 3 of guidance" in result["response"]
 
 
 def test_kpi_insights():

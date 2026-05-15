@@ -212,6 +212,7 @@ async function send() {
 mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
 checkAuthRedirect();
 loadRecordings();
+loadDocuments();
 
 
 // --- Architecture Diagram ---
@@ -417,4 +418,64 @@ function sentimentEmoji(s) {
     if (s === 'positive') return '😊';
     if (s === 'negative') return '😠';
     return '😐';
+}
+
+
+// --- Documents (Knowledge Base) ---
+async function loadDocuments() {
+    const container = document.getElementById('documentsList');
+    if (!container) return;
+    try {
+        const res = await fetch(BASE + '/api/documents');
+        const data = await res.json();
+        if (!data.documents || data.documents.length === 0) {
+            container.innerHTML = '<span class="sp-loading">No documents yet</span>';
+            return;
+        }
+        container.innerHTML = data.documents.map(d => {
+            const sizeMB = (d.size / 1024 / 1024).toFixed(1);
+            return `<a href="${d.url}" target="_blank" class="doc-item">
+                <span class="doc-icon">📕</span>
+                <div class="doc-info">
+                    <div class="doc-name">${d.name}</div>
+                    <div class="doc-meta">${sizeMB} MB • ${d.indexed ? '✅ Indexed' : '⏳ Processing'}</div>
+                </div>
+                <span class="doc-download">⬇️</span>
+            </a>`;
+        }).join('');
+    } catch (e) {
+        container.innerHTML = '<span class="sp-loading">Error loading</span>';
+    }
+}
+
+async function uploadDocument(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (!file.name.endsWith('.pdf')) {
+        alert('Only PDF files are supported');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const container = document.getElementById('documentsList');
+    container.innerHTML += `<div class="doc-item"><span class="doc-icon">⏳</span><div class="doc-info"><div class="doc-name">${file.name}</div><div class="doc-meta">Uploading & indexing...</div></div></div>`;
+
+    try {
+        const res = await fetch(BASE + '/api/documents/upload', {
+            method: 'POST',
+            body: formData,
+        });
+        const data = await res.json();
+        if (data.error) {
+            alert(data.error);
+        } else {
+            // Reload documents list after a delay (indexing is async)
+            setTimeout(loadDocuments, 3000);
+        }
+    } catch (e) {
+        alert('Upload failed: ' + e.message);
+    }
+    input.value = '';
 }

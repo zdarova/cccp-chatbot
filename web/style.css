@@ -1,31 +1,33 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-    --teams-purple: #6264a7;
-    --teams-dark: #292929;
-    --teams-bg: #f5f5f5;
-    --teams-white: #ffffff;
-    --teams-border: #e1e1e1;
-    --teams-text: #252525;
-    --teams-muted: #616161;
-    --teams-hover: #ebebeb;
-    --teams-accent: #6264a7;
+    --mazda-red: #910a0a;
+    --mazda-dark: #1a1a1a;
+    --mazda-grey: #2d2d2d;
+    --mazda-bg: #f4f4f4;
+    --mazda-white: #ffffff;
+    --mazda-border: #e0e0e0;
+    --mazda-text: #1a1a1a;
+    --mazda-muted: #6b6b6b;
+    --mazda-hover: #f0f0f0;
+    --mazda-accent: #910a0a;
+    --mazda-light-red: #fef2f2;
 }
-body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--teams-bg); height: 100vh; overflow: hidden; }
+body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--mazda-bg); height: 100vh; overflow: hidden; }
 
 /* Login */
-.login-screen { display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #6264a7 0%, #464775 100%); }
-.login-card { background: white; border-radius: 12px; padding: 3rem; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); max-width: 400px; width: 90%; }
+.login-screen { display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #1a1a1a 0%, #910a0a 100%); }
+.login-card { background: white; border-radius: 12px; padding: 3rem; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.3); max-width: 400px; width: 90%; }
 .login-logo { margin-bottom: 1.5rem; }
-.login-card h2 { font-size: 1.4rem; color: var(--teams-text); margin-bottom: .5rem; }
-.login-sub { color: var(--teams-muted); font-size: .85rem; margin-bottom: 2rem; }
-.ms-login-btn { display: flex; align-items: center; justify-content: center; gap: .6rem; width: 100%; padding: .75rem; border: 1px solid var(--teams-border); border-radius: 6px; background: white; font-size: .9rem; font-weight: 500; cursor: pointer; transition: all .2s; }
-.ms-login-btn:hover { background: var(--teams-hover); border-color: var(--teams-accent); }
-.guest-btn { width: 100%; padding: .6rem; border: none; background: none; color: var(--teams-accent); font-size: .8rem; cursor: pointer; margin-top: 1rem; }
+.login-card h2 { font-size: 1.4rem; color: var(--mazda-text); margin-bottom: .5rem; }
+.login-sub { color: var(--mazda-muted); font-size: .85rem; margin-bottom: 2rem; }
+.ms-login-btn { display: flex; align-items: center; justify-content: center; gap: .6rem; width: 100%; padding: .75rem; border: 1px solid var(--mazda-border); border-radius: 6px; background: white; font-size: .9rem; font-weight: 500; cursor: pointer; transition: all .2s; }
+.ms-login-btn:hover { background: var(--mazda-hover); border-color: var(--mazda-accent); }
+.guest-btn { width: 100%; padding: .6rem; border: none; background: none; color: var(--mazda-accent); font-size: .8rem; cursor: pointer; margin-top: 1rem; }
 .guest-btn:hover { text-decoration: underline; }
 
 /* Main App */
 .main-app { display: flex; flex-direction: column; height: 100vh; }
-header { display: flex; align-items: center; justify-content: space-between; padding: .6rem 1.5rem; background: var(--teams-dark); color: white; }
+header { display: flex; align-items: center; justify-content: space-between; padding: .6rem 1.5rem; background: var(--mazda-dark); color: white; }
 .header-left { display: flex; align-items: center; gap: .8rem; }
 .header-left h1 { font-size: 1rem; font-weight: 600; }
 .header-sub { font-size: .7rem; opacity: .7; }
@@ -38,24 +40,38 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 
 /* Layout */
 .layout { display: flex; flex: 1; overflow: hidden; }
-.sidebar { width: 260px; background: white; border-right: 1px solid var(--teams-border); padding: 1rem; overflow-y: auto; }
+.sidebar { width: 270px; background: white; border-right: 1px solid var(--mazda-border); padding: 1rem; overflow-y: auto; }
 .sidebar-section { margin-bottom: 1.5rem; }
-.sidebar-section h3 { font-size: .75rem; text-transform: uppercase; color: var(--teams-muted); margin-bottom: .6rem; letter-spacing: .5px; }
+.sidebar-section h3 { font-size: .7rem; text-transform: uppercase; color: var(--mazda-muted); margin-bottom: .5rem; letter-spacing: .5px; font-weight: 600; }
 .agent-list { display: flex; flex-direction: column; gap: .2rem; }
-.agent-item { display: flex; align-items: center; gap: .5rem; padding: .4rem .6rem; border-radius: 4px; font-size: .8rem; color: var(--teams-text); cursor: default; transition: all .2s; }
-.agent-item.active { background: #e8e8fc; color: var(--teams-accent); font-weight: 500; }
-.agent-item.generating { background: var(--teams-accent); color: white; animation: pulse 1.2s infinite; }
+.agent-item { display: flex; align-items: center; gap: .5rem; padding: .35rem .6rem; border-radius: 4px; font-size: .75rem; color: var(--mazda-text); cursor: default; transition: all .2s; }
+.agent-item.active { background: var(--mazda-light-red); color: var(--mazda-accent); font-weight: 500; }
+.agent-item.generating { background: var(--mazda-accent); color: white; animation: pulse 1.2s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .7; } }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-router { background: #6264a7; } .dot-analyst { background: #3b82f6; } .dot-theme { background: #06b6d4; }
+.dot-router { background: #910a0a; } .dot-analyst { background: #3b82f6; } .dot-theme { background: #06b6d4; }
 .dot-rec { background: #f59e0b; } .dot-kpi { background: #10b981; } .dot-guide { background: #8b5cf6; }
 .dot-sum { background: #ec4899; } .dot-qc { background: #22c55e; }
-.action-btn { width: 100%; text-align: left; padding: .5rem .6rem; border: 1px solid var(--teams-border); border-radius: 6px; background: white; font-size: .75rem; cursor: pointer; margin-bottom: .3rem; transition: all .2s; }
-.action-btn:hover { background: var(--teams-hover); border-color: var(--teams-accent); }
+.action-btn { width: 100%; text-align: left; padding: .5rem .6rem; border: 1px solid var(--mazda-border); border-radius: 6px; background: white; font-size: .72rem; cursor: pointer; margin-bottom: .3rem; transition: all .2s; }
+.action-btn:hover { background: var(--mazda-hover); border-color: var(--mazda-accent); }
 
-/* SharePoint */
-.sp-files { font-size: .75rem; color: var(--teams-muted); }
-.sp-file { display: flex; align-items: center; gap: .4rem; padding: .3rem 0; }
+/* Documents */
+.doc-list { display: flex; flex-direction: column; gap: .3rem; }
+.doc-item { display: flex; align-items: center; gap: .5rem; padding: .5rem; border: 1px solid var(--mazda-border); border-radius: 6px; text-decoration: none; color: var(--mazda-text); transition: all .2s; }
+.doc-item:hover { background: var(--mazda-light-red); border-color: var(--mazda-accent); }
+.doc-icon { font-size: 1.2rem; }
+.doc-info { flex: 1; }
+.doc-name { font-size: .72rem; font-weight: 500; }
+.doc-meta { font-size: .6rem; color: var(--mazda-muted); }
+.doc-download { font-size: .8rem; }
+.upload-area { margin-top: .5rem; padding: .5rem; border: 2px dashed var(--mazda-border); border-radius: 6px; text-align: center; cursor: pointer; transition: all .2s; }
+.upload-area:hover { border-color: var(--mazda-accent); background: var(--mazda-light-red); }
+.upload-area input { display: none; }
+.upload-area label { font-size: .7rem; color: var(--mazda-muted); cursor: pointer; }
+
+/* SharePoint / Files */
+.sp-files { font-size: .75rem; color: var(--mazda-muted); }
+.sp-loading { font-style: italic; }
 
 /* Chat */
 .chat-area { flex: 1; display: flex; flex-direction: column; }
@@ -63,42 +79,36 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .message { display: flex; gap: .6rem; margin-bottom: 1rem; max-width: 800px; animation: fadeIn .3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .message.user { flex-direction: row-reverse; margin-left: auto; }
-.msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--teams-accent); color: white; display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 600; flex-shrink: 0; }
-.message.user .msg-avatar { background: #0078d4; }
-.bubble { background: white; border: 1px solid var(--teams-border); border-radius: 8px; padding: .8rem 1rem; font-size: .85rem; line-height: 1.5; color: var(--teams-text); max-width: 680px; }
-.message.user .bubble { background: #e1dfff; border-color: #d1cfef; }
-.bubble h1,.bubble h2,.bubble h3 { margin: .8rem 0 .4rem; color: var(--teams-accent); }
+.msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--mazda-accent); color: white; display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 600; flex-shrink: 0; }
+.message.user .msg-avatar { background: var(--mazda-dark); }
+.bubble { background: white; border: 1px solid var(--mazda-border); border-radius: 8px; padding: .8rem 1rem; font-size: .85rem; line-height: 1.5; color: var(--mazda-text); max-width: 680px; }
+.message.user .bubble { background: var(--mazda-light-red); border-color: #fecaca; }
+.bubble h1,.bubble h2,.bubble h3 { margin: .8rem 0 .4rem; color: var(--mazda-accent); }
 .bubble h1 { font-size: 1.1rem; } .bubble h2 { font-size: 1rem; } .bubble h3 { font-size: .9rem; }
 .bubble ul,.bubble ol { margin: .4rem 0 .4rem 1.2rem; }
 .bubble li { margin-bottom: .2rem; }
 .bubble table { border-collapse: collapse; width: 100%; margin: .6rem 0; font-size: .8rem; }
-.bubble th,.bubble td { border: 1px solid var(--teams-border); padding: .3rem .5rem; text-align: left; }
-.bubble th { background: var(--teams-accent); color: white; }
-.bubble strong { color: var(--teams-text); }
+.bubble th,.bubble td { border: 1px solid var(--mazda-border); padding: .3rem .5rem; text-align: left; }
+.bubble th { background: var(--mazda-dark); color: white; }
+.bubble strong { color: var(--mazda-text); }
 .bubble code { background: #f0f0f0; padding: .1rem .3rem; border-radius: 3px; font-size: .8em; }
-.typing { color: var(--teams-muted); font-style: italic; font-size: .8rem; }
-.routing-badge { display: inline-block; background: #e8e8fc; color: var(--teams-accent); padding: .15rem .5rem; border-radius: 12px; font-size: .7rem; font-weight: 500; margin-right: .3rem; margin-bottom: .4rem; }
-.quality-bar { margin-top: .6rem; padding: .4rem .6rem; background: #f8f8f8; border-radius: 6px; font-size: .7rem; color: var(--teams-muted); }
+.bubble img { max-width: 100%; border-radius: 6px; margin: .5rem 0; border: 1px solid var(--mazda-border); }
+.typing { color: var(--mazda-muted); font-style: italic; font-size: .8rem; }
+.routing-badge { display: inline-block; background: var(--mazda-light-red); color: var(--mazda-accent); padding: .15rem .5rem; border-radius: 12px; font-size: .7rem; font-weight: 500; margin-right: .3rem; margin-bottom: .4rem; }
+.quality-bar { margin-top: .6rem; padding: .4rem .6rem; background: #f8f8f8; border-radius: 6px; font-size: .7rem; color: var(--mazda-muted); }
 
 /* Input */
-.input-area { padding: .8rem 2rem; border-top: 1px solid var(--teams-border); background: white; }
+.input-area { padding: .8rem 2rem; border-top: 1px solid var(--mazda-border); background: white; }
 .input-wrapper { display: flex; gap: .5rem; max-width: 800px; }
-#input { flex: 1; padding: .6rem 1rem; border: 1px solid var(--teams-border); border-radius: 6px; font-size: .85rem; outline: none; }
-#input:focus { border-color: var(--teams-accent); }
-#sendBtn { padding: .6rem 1.2rem; background: var(--teams-accent); color: white; border: none; border-radius: 6px; font-size: .85rem; font-weight: 500; cursor: pointer; }
-#sendBtn:hover { background: #4f51a0; }
+#input { flex: 1; padding: .6rem 1rem; border: 1px solid var(--mazda-border); border-radius: 6px; font-size: .85rem; outline: none; }
+#input:focus { border-color: var(--mazda-accent); box-shadow: 0 0 0 2px rgba(145,10,10,0.1); }
+#sendBtn { padding: .6rem 1.2rem; background: var(--mazda-accent); color: white; border: none; border-radius: 6px; font-size: .85rem; font-weight: 500; cursor: pointer; }
+#sendBtn:hover { background: #7a0808; }
 #sendBtn:disabled { background: #ccc; cursor: not-allowed; }
-
-@media (max-width: 768px) {
-    .sidebar { display: none; }
-    .chat-container { padding: 1rem; }
-    .input-area { padding: .6rem 1rem; }
-}
-
 
 /* Recordings */
 .recordings-list { display: flex; flex-direction: column; gap: .3rem; }
-.rec-item { display: flex; align-items: center; gap: .4rem; padding: .3rem .5rem; border-radius: 4px; font-size: .7rem; border: 1px solid var(--teams-border); }
+.rec-item { display: flex; align-items: center; gap: .4rem; padding: .3rem .5rem; border-radius: 4px; font-size: .7rem; border: 1px solid var(--mazda-border); }
 .rec-item.processed { background: #f0fdf4; border-color: #86efac; }
 .rec-item.pending { background: #fef9c3; border-color: #fde047; }
 .rec-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -106,37 +116,42 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .rec-status.wait { background: #f59e0b; }
 .rec-info { flex: 1; overflow: hidden; }
 .rec-id { font-weight: 500; }
-.rec-meta { font-size: .6rem; color: var(--teams-muted); }
+.rec-meta { font-size: .6rem; color: var(--mazda-muted); }
 
 /* Architecture Modal */
 .arch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .arch-content { background: white; border-radius: 12px; width: 96vw; height: 94vh; position: relative; display: flex; flex-direction: column; }
-.arch-header { display: flex; align-items: center; justify-content: space-between; padding: .6rem 1rem; border-bottom: 1px solid var(--teams-border); }
-.arch-header h2 { font-size: 1rem; color: var(--teams-accent); margin: 0; }
+.arch-header { display: flex; align-items: center; justify-content: space-between; padding: .6rem 1rem; border-bottom: 1px solid var(--mazda-border); }
+.arch-header h2 { font-size: 1rem; color: var(--mazda-accent); margin: 0; }
 .arch-controls { display: flex; gap: .4rem; }
-.arch-controls button { width: 32px; height: 32px; border: 1px solid var(--teams-border); border-radius: 6px; background: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
-.arch-controls button:hover { background: var(--teams-hover); }
-.arch-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--teams-muted); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+.arch-controls button { width: 32px; height: 32px; border: 1px solid var(--mazda-border); border-radius: 6px; background: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+.arch-controls button:hover { background: var(--mazda-hover); }
+.arch-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--mazda-muted); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
 .arch-close:hover { background: #fee2e2; color: #dc2626; }
 .arch-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 1rem; }
 .arch-body .mermaid { transform-origin: center center; transition: transform .2s ease; }
 .arch-body .mermaid svg { max-width: none !important; height: auto !important; }
-
 
 /* Live Call */
 .live-call-btn.active { background: #22c55e !important; animation: pulse-mic 1.5s infinite; }
 @keyframes pulse-mic { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
 .live-sentiment { display: flex; flex-direction: column; gap: .3rem; margin: .5rem 0; }
 .sentiment-gauge { display: flex; align-items: center; justify-content: space-between; padding: .3rem .5rem; background: #f8f8f8; border-radius: 4px; font-size: .7rem; }
-.sentiment-label { color: var(--teams-muted); }
+.sentiment-label { color: var(--mazda-muted); }
 .sentiment-value { font-weight: 600; font-size: .8rem; }
 .sentiment-value.positive { color: #22c55e; }
 .sentiment-value.negative { color: #dc2626; }
 .sentiment-value.neutral { color: #f59e0b; }
-.live-transcript { max-height: 150px; overflow-y: auto; font-size: .7rem; color: var(--teams-text); border: 1px solid var(--teams-border); border-radius: 4px; padding: .4rem; margin-top: .3rem; }
+.live-transcript { max-height: 150px; overflow-y: auto; font-size: .7rem; color: var(--mazda-text); border: 1px solid var(--mazda-border); border-radius: 4px; padding: .4rem; margin-top: .3rem; }
 .live-transcript .utterance { padding: .2rem 0; border-bottom: 1px solid #f0f0f0; }
 .live-transcript .utterance:last-child { border-bottom: none; }
 .live-transcript .sent-badge { display: inline-block; padding: .1rem .3rem; border-radius: 3px; font-size: .6rem; font-weight: 500; margin-left: .3rem; }
 .live-transcript .sent-badge.pos { background: #dcfce7; color: #166534; }
 .live-transcript .sent-badge.neg { background: #fee2e2; color: #991b1b; }
 .live-transcript .sent-badge.neu { background: #fef9c3; color: #854d0e; }
+
+@media (max-width: 768px) {
+    .sidebar { display: none; }
+    .chat-container { padding: 1rem; }
+    .input-area { padding: .6rem 1rem; }
+}
