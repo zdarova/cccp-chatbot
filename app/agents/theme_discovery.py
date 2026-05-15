@@ -37,9 +37,11 @@ PROMPT = ChatPromptTemplate.from_template(
 
 def theme_discovery(state: AgentState) -> AgentState:
     from tools.pgvector_tool import search_transcripts
+    from tools.snowflake_tool import get_themes
 
     transcripts = search_transcripts(state["question"], k=8)
-    context = f"Recent call transcripts:\n{transcripts}"
+    themes = get_themes()
+    context = f"Recent call transcripts:\n{transcripts}\n\nKnown themes:\n{themes}"
 
     result = (PROMPT | _get_llm()).invoke({
         "context": context[:4000],
