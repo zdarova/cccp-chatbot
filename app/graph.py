@@ -20,7 +20,7 @@ SPECIALISTS = {
     "kpi_insights": kpi_insights,
     "guidance": guidance,
     "summary": summary,
-    "fallback": lambda state: {**state, "response": "Ciao! Sono l'assistente AI del call centre. Come posso aiutarti?"},
+    "fallback": lambda state: {**state, "response": "I'm sorry, I wasn't able to process your request. Please try rephrasing your question, or contact support at support@cccpaiassistant.com for further assistance."},
 }
 
 
