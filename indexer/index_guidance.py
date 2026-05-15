@@ -5,7 +5,7 @@ import sys
 import logging
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_postgres.vectorstores import PGVector
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 
 logging.basicConfig(level=logging.INFO)
