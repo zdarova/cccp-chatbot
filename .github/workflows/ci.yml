@@ -1,8 +1,6 @@
 name: CI - Tests
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -11,13 +9,14 @@ env:
 
 jobs:
   test:
+    name: 🧪 Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install deps
+      - name: Install dependencies
         run: pip install -r app/requirements.txt pytest
-      - name: Unit tests
+      - name: Run unit tests
         run: pytest tests/ -v
