@@ -109,7 +109,15 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .rec-meta { font-size: .6rem; color: var(--teams-muted); }
 
 /* Architecture Modal */
-.arch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.arch-content { background: white; border-radius: 12px; padding: 1.5rem; max-width: 95vw; max-height: 90vh; overflow: auto; position: relative; }
-.arch-close { position: absolute; top: .5rem; right: .8rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--teams-muted); }
-.arch-content .mermaid { min-width: 800px; }
+.arch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.arch-content { background: white; border-radius: 12px; width: 96vw; height: 94vh; position: relative; display: flex; flex-direction: column; }
+.arch-header { display: flex; align-items: center; justify-content: space-between; padding: .6rem 1rem; border-bottom: 1px solid var(--teams-border); }
+.arch-header h2 { font-size: 1rem; color: var(--teams-accent); margin: 0; }
+.arch-controls { display: flex; gap: .4rem; }
+.arch-controls button { width: 32px; height: 32px; border: 1px solid var(--teams-border); border-radius: 6px; background: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+.arch-controls button:hover { background: var(--teams-hover); }
+.arch-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--teams-muted); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+.arch-close:hover { background: #fee2e2; color: #dc2626; }
+.arch-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.arch-body .mermaid { transform-origin: center center; transition: transform .2s ease; }
+.arch-body .mermaid svg { max-width: none !important; height: auto !important; }

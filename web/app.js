@@ -215,25 +215,44 @@ loadRecordings();
 
 
 // --- Architecture Diagram ---
+let _archZoom = 1;
+
 async function showArchitecture() {
     try {
         const res = await fetch(BASE + '/api/architecture');
         const data = await res.json();
+        _archZoom = 1;
 
         const modal = document.createElement('div');
         modal.className = 'arch-modal';
         modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
         modal.innerHTML = `
             <div class="arch-content">
-                <button class="arch-close" onclick="this.parentElement.parentElement.remove()">✕</button>
-                <h2 style="margin-bottom:1rem;color:var(--teams-accent)">CCCP Architecture</h2>
-                <div class="mermaid">${data.diagram}</div>
+                <div class="arch-header">
+                    <h2>CCCP Platform Architecture</h2>
+                    <div class="arch-controls">
+                        <button onclick="archZoom(-0.2)" title="Zoom Out">➖</button>
+                        <button onclick="archZoom(0)" title="Reset">🔄</button>
+                        <button onclick="archZoom(0.2)" title="Zoom In">➕</button>
+                        <button class="arch-close" onclick="this.closest('.arch-modal').remove()" title="Close">✕</button>
+                    </div>
+                </div>
+                <div class="arch-body">
+                    <div class="mermaid" id="archDiagram">${data.diagram}</div>
+                </div>
             </div>`;
         document.body.appendChild(modal);
         await mermaid.run({ nodes: modal.querySelectorAll('.mermaid') });
     } catch (e) {
         alert('Failed to load architecture: ' + e.message);
     }
+}
+
+function archZoom(delta) {
+    if (delta === 0) { _archZoom = 1; }
+    else { _archZoom = Math.max(0.3, Math.min(3, _archZoom + delta)); }
+    const el = document.getElementById('archDiagram');
+    if (el) el.style.transform = `scale(${_archZoom})`;
 }
 
 // --- Recordings ---
