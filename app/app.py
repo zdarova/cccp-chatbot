@@ -125,9 +125,8 @@ class SentimentRequest(BaseModel):
 
 @app.post("/api/sentiment")
 async def analyse_sentiment(req: SentimentRequest):
-    """Real-time sentiment analysis for a single utterance."""
+    """Real-time sentiment analysis - Azure AI Language (fast) with GPT fallback."""
     from event_bus import get_event_bus, CallEvent
-    import asyncio
 
     bus = get_event_bus()
 
@@ -139,42 +138,109 @@ async def analyse_sentiment(req: SentimentRequest):
         source_agent="live_mic",
     ))
 
-    # Also do LLM-based sentiment for more nuance
+    # Primary: Azure AI Language (50-100ms)
+    result = await _sentiment_azure_language(req.text)
+    if result:
+        return result
+
+    # Fallback: GPT (1-3s, more nuanced)
+    result = await _sentiment_gpt(req.text)
+    if result:
+        return result
+
+    # Last resort: keyword-based
+    return _sentiment_keywords(req.text)
+
+
+async def _sentiment_azure_language(text: str) -> dict | None:
+    """Azure AI Language sentiment analysis (~50ms)."""
+    try:
+        from azure.ai.textanalytics import TextAnalyticsClient
+        from azure.core.credentials import AzureKeyCredential
+        import asyncio
+
+        endpoint = os.environ.get("AZURE_LANGUAGE_ENDPOINT", os.environ.get("AZURE_OPENAI_ENDPOINT", ""))
+        key = os.environ.get("AZURE_LANGUAGE_KEY", os.environ.get("AZURE_OPENAI_KEY", ""))
+
+        # Use the Speech/Language cognitive services endpoint
+        lang_endpoint = os.environ.get("AZURE_LANGUAGE_ENDPOINT", "")
+        lang_key = os.environ.get("AZURE_LANGUAGE_KEY", "")
+
+        if not lang_endpoint or not lang_key:
+            return None
+
+        client = TextAnalyticsClient(endpoint=lang_endpoint, credential=AzureKeyCredential(lang_key))
+
+        response = await asyncio.to_thread(
+            client.analyze_sentiment, [text], language="en"
+        )
+
+        doc = response[0]
+        if doc.is_error:
+            return None
+
+        sentiment = doc.sentiment  # positive, negative, neutral, mixed
+        scores = doc.confidence_scores
+        score = scores.positive - scores.negative  # -1 to 1
+
+        return {
+            "sentiment": sentiment if sentiment != "mixed" else "neutral",
+            "score": round(score, 2),
+            "emotion": sentiment,
+            "confidence": round(max(scores.positive, scores.negative, scores.neutral), 2),
+            "source": "azure_language",
+        }
+    except ImportError:
+        logging.debug("azure-ai-textanalytics not installed, skipping")
+        return None
+    except Exception as e:
+        logging.warning(f"Azure Language sentiment failed: {e}")
+        return None
+
+
+async def _sentiment_gpt(text: str) -> dict | None:
+    """GPT-based sentiment analysis (1-3s, more nuanced)."""
     try:
         from langchain_openai import AzureChatOpenAI
         from langchain_core.prompts import ChatPromptTemplate
+        import asyncio, re
+        import json as _json
 
         llm = AzureChatOpenAI(
             azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
             api_key=os.environ["AZURE_OPENAI_KEY"],
             azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
             api_version="2024-06-01",
-            temperature=0, max_tokens=100,
+            temperature=0, max_tokens=80,
         )
         prompt = ChatPromptTemplate.from_template(
             "Analyse sentiment of this call centre utterance.\n"
             "Utterance: {text}\n"
             'Reply ONLY JSON: {{"sentiment": "positive|negative|neutral", "score": <-1.0 to 1.0>, "emotion": "<primary emotion>"}}'
         )
-        result = (prompt | llm).invoke({"text": req.text})
-        import json as _json
-        import re
+        result = await asyncio.to_thread(
+            lambda: (prompt | llm).invoke({"text": text})
+        )
         match = re.search(r'\{[^}]+\}', result.content)
         if match:
             parsed = _json.loads(match.group())
+            parsed["source"] = "gpt"
             return parsed
     except Exception as e:
-        logging.warning(f"LLM sentiment failed: {e}")
+        logging.warning(f"GPT sentiment failed: {e}")
+    return None
 
-    # Fallback: simple keyword-based
-    text_lower = req.text.lower()
-    neg_words = ["problem", "issue", "terrible", "cancel", "angry", "frustrated", "unacceptable", "worst"]
-    pos_words = ["thank", "great", "perfect", "happy", "excellent", "satisfied", "wonderful"]
+
+def _sentiment_keywords(text: str) -> dict:
+    """Fast keyword-based fallback."""
+    text_lower = text.lower()
+    neg_words = ["problem", "issue", "terrible", "cancel", "angry", "frustrated", "unacceptable", "worst", "horrible", "ridiculous"]
+    pos_words = ["thank", "great", "perfect", "happy", "excellent", "satisfied", "wonderful", "amazing", "love"]
     neg = sum(1 for w in neg_words if w in text_lower)
     pos = sum(1 for w in pos_words if w in text_lower)
     score = (pos - neg) / max(pos + neg, 1)
     sentiment = "negative" if score < -0.2 else "positive" if score > 0.2 else "neutral"
-    return {"sentiment": sentiment, "score": round(score, 2), "emotion": "unknown"}
+    return {"sentiment": sentiment, "score": round(score, 2), "emotion": "unknown", "source": "keywords"}
 
 
 @app.get("/api/events/metrics/summary")
