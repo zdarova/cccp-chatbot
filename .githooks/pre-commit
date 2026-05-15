@@ -1,0 +1,14 @@
+#!/bin/bash
+echo "🔍 Checking Python syntax..."
+errors=0
+for f in $(git diff --cached --name-only --diff-filter=ACM | grep '\.py$'); do
+    python3 -c "import py_compile; py_compile.compile('$f', doraise=True)" 2>&1
+    if [ $? -ne 0 ]; then
+        errors=1
+    fi
+done
+if [ $errors -ne 0 ]; then
+    echo "❌ Syntax errors found. Fix before committing."
+    exit 1
+fi
+echo "✅ Syntax OK"

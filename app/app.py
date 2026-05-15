@@ -64,7 +64,7 @@ def chat(req: ChatRequest):
         try:
             for event in _get_graph().stream(initial_state):
                 for node_name, node_output in event.items():
-                    elif node_name == "router":
+                    if node_name == "router":
                         routes = node_output.get("routes", ["fallback"])
                         routes_used = routes
                         yield _sse("routing", {
