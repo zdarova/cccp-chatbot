@@ -7,6 +7,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from graph import build_graph
 
@@ -86,3 +87,11 @@ def chat(req: ChatRequest):
 @app.get("/api/health")
 def health():
     return {"status": "ok", "service": "cccp-chatbot"}
+
+
+# Serve web UI (must be last - catches all unmatched routes)
+web_dir = os.path.join(os.path.dirname(__file__), 'web')
+if not os.path.exists(web_dir):
+    web_dir = os.path.join(os.path.dirname(__file__), '..', 'web')
+if os.path.exists(web_dir):
+    app.mount("/", StaticFiles(directory=web_dir, html=True), name="web")

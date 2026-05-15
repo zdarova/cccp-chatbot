@@ -3,7 +3,7 @@ name: Deploy Chatbot App
 on:
   push:
     branches: [main]
-    paths: ['app/**']
+    paths: ['app/**', 'web/**', 'Dockerfile']
   workflow_dispatch:
 
 permissions:
@@ -33,8 +33,8 @@ jobs:
             --resource-group $RESOURCE_GROUP \
             --image cccp-chatbot:${{ github.sha }} \
             --image cccp-chatbot:latest \
-            --file app/Dockerfile \
-            app/
+            --file Dockerfile \
+            .
       - name: Deploy to Container App
         run: |
           az containerapp update \

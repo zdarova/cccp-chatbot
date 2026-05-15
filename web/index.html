@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCCP - Call Centre Cognitive Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <svg width="40" height="40" viewBox="0 0 23 23"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></svg>
+            </div>
+            <h2>Call Centre Cognitive Platform</h2>
+            <p class="login-sub">Sign in with your Microsoft account to access the AI assistant</p>
+            <button class="ms-login-btn" onclick="microsoftLogin()">
+                <svg width="20" height="20" viewBox="0 0 23 23"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></svg>
+                Sign in with Microsoft
+            </button>
+            <button class="guest-btn" onclick="guestLogin()">Continue as Guest</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="main-app" style="display:none">
+        <header>
+            <div class="header-left">
+                <div class="teams-icon">
+                    <svg width="24" height="24" viewBox="0 0 23 23"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></svg>
+                </div>
+                <div>
+                    <h1>CCCP AI Assistant</h1>
+                    <span class="header-sub">Call Centre Cognitive Platform</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div id="userInfo" class="user-info">
+                    <img id="userAvatar" class="avatar-small" />
+                    <span id="userName"></span>
+                </div>
+                <div class="status-dot"></div>
+                <span class="status-text">Online</span>
+            </div>
+        </header>
+
+        <div class="layout">
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Agents</h3>
+                    <div class="agent-list">
+                        <div class="agent-item" data-agent="router"><span class="dot dot-router"></span> Router</div>
+                        <div class="agent-item" data-agent="customer_analyst"><span class="dot dot-analyst"></span> Customer Analyst</div>
+                        <div class="agent-item" data-agent="theme_discovery"><span class="dot dot-theme"></span> Theme Discovery</div>
+                        <div class="agent-item" data-agent="recommendation"><span class="dot dot-rec"></span> Recommendation</div>
+                        <div class="agent-item" data-agent="kpi_insights"><span class="dot dot-kpi"></span> KPI Insights</div>
+                        <div class="agent-item" data-agent="guidance"><span class="dot dot-guide"></span> Guidance</div>
+                        <div class="agent-item" data-agent="summary"><span class="dot dot-sum"></span> Summary</div>
+                        <div class="agent-item" data-agent="quality_check"><span class="dot dot-qc"></span> Quality Check</div>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <h3>Quick Actions</h3>
+                    <button class="action-btn" onclick="askQuestion('Come sta andando il NPS nei call centre?')">📊 NPS Overview</button>
+                    <button class="action-btn" onclick="askQuestion('Quali nuovi temi emergono dalle chiamate?')">🔍 New Themes</button>
+                    <button class="action-btn" onclick="askQuestion('Suggerisci azioni per clienti a rischio churn')">⚠️ Churn Risk</button>
+                    <button class="action-btn" onclick="askQuestion('Cosa dice la guida su clienti insoddisfatti?')">📋 Guidance</button>
+                </div>
+                <div class="sidebar-section sharepoint-section" id="sharepointSection" style="display:none">
+                    <h3>📁 SharePoint</h3>
+                    <div id="sharepointFiles" class="sp-files">
+                        <span class="sp-loading">Connecting...</span>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="chat-area">
+                <div class="chat-container" id="chat">
+                    <div class="message assistant">
+                        <div class="msg-avatar">AI</div>
+                        <div class="bubble">
+                            <strong>Benvenuto!</strong> Sono l'assistente AI del Call Centre.<br><br>
+                            Posso aiutarti con:
+                            <ul>
+                                <li>📊 <strong>KPI e metriche</strong> — NPS, CSAT, FCR, tempi di gestione</li>
+                                <li>👤 <strong>Analisi clienti</strong> — sentiment, storico interazioni</li>
+                                <li>🔍 <strong>Temi emergenti</strong> — pattern nelle chiamate</li>
+                                <li>💡 <strong>Raccomandazioni</strong> — prodotti, azioni commerciali</li>
+                                <li>📋 <strong>Guida operativa</strong> — best practice, procedure</li>
+                                <li>📝 <strong>Riassunti</strong> — sintesi interazioni cliente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="input" placeholder="Chiedi qualcosa sul call centre..." onkeypress="if(event.key==='Enter')send()">
+                        <button onclick="send()" id="sendBtn">Invia</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
